@@ -1,5 +1,7 @@
+
 import { useState } from "react";
 import formatCurrency from "../utils/helpers";
+// import { createRows } from "./../utils/db";
 
 const emptyItem = () => ({
   id: Date.now() + Math.random(),
@@ -7,7 +9,7 @@ const emptyItem = () => ({
   qty: 1,
   price: 0,
 });
-export default function InvoiceForm({ onSubmit }) {
+export default function InvoiceForm() {
   const [invoiceNumber, setInvoiceNumber] = useState("");
   const [clientName, setClientName] = useState("");
   const [date, setDate] = useState("");
@@ -15,6 +17,7 @@ export default function InvoiceForm({ onSubmit }) {
   const [items, setItems] = useState([emptyItem()]);
   const [taxPercent, setTaxPercent] = useState(0);
   const [notes, setNotes] = useState("");
+  const [status, setStatus] = useState("Sent");
 
   const updateItem = (id, field, value) => {
     setItems((prev) =>
@@ -45,50 +48,71 @@ export default function InvoiceForm({ onSubmit }) {
     return null;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e && e.preventDefault();
+
     const err = validate();
     if (err) {
       alert(err);
       return;
     }
 
-    const invoice = {
+    const invoiceDetails = {
       invoiceNumber: invoiceNumber.trim() || undefined,
       clientName: clientName.trim(),
       date,
       dueDate: dueDate || undefined,
       items: items.map((it) => ({
         description: it.description.trim(),
-        qty: Number(it.qty),
-        price: Number(it.price),
+        qty: Number(it.qty) || 0,
+        price: Number(it.price) || 0,
+        amount: (Number(it.qty) || 0) * (Number(it.price) || 0),
       })),
-      taxPercent: Number(taxPercent),
+      taxPercent: Number(taxPercent) || 0,
       subtotal,
       taxAmount,
       total,
       notes: notes.trim() || undefined,
+      status: status || undefined,
     };
 
-    if (onSubmit) onSubmit(invoice);
-    else console.log("Invoice submitted", invoice);
+    try {
+      // Check env var name in your .env; adjust if it's VITE_INVOICES_TABLE instead
+      const tableId =
+        import.meta.env.VITE_INVOICES_TABLE_ID ||
+        import.meta.env.VITE_INVOICES_TABLE;
+      const newInvoiceData = await createRows(tableId, invoiceDetails);
+      console.log("New invoice created:", newInvoiceData);
+      const invoiceId = newInvoiceData.$id;
+
+      // reset form (optional)
+      setInvoiceNumber("");
+      setClientName("");
+      setDate("");
+      setDueDate("");
+      setItems([emptyItem()]);
+      setTaxPercent(0);
+      setNotes("");
+      setStatus("Sent");
+
+      alert(`Invoice saved (id: ${invoiceId})`);
+    } catch (error) {
+      console.error("Failed to save invoice", error);
+      alert("Failed to save invoice. See console for details.");
+    }
   };
 
   return (
-    <form
-      className="invoice-form"
-      onSubmit={handleSubmit}
-      style={{ maxWidth: 900 }}
-    >
-      <div style={{ display: "flex", gap: 12 }}>
-        <div style={{ flex: 1 }}>
+    <form className="invoice-form" onSubmit={handleSubmit}>
+      <div className="form-row">
+        <div className="col">
           <label>Invoice #</label>
           <input
             value={invoiceNumber}
             onChange={(e) => setInvoiceNumber(e.target.value)}
           />
 
-          <label>Client</label>
+          <label>Client Name</label>
           <input
             value={clientName}
             onChange={(e) => setClientName(e.target.value)}
@@ -99,7 +123,7 @@ export default function InvoiceForm({ onSubmit }) {
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
         </div>
 
-        <div style={{ width: 220 }}>
+        <div className="form-side">
           <label>Date</label>
           <input
             type="date"
@@ -119,17 +143,24 @@ export default function InvoiceForm({ onSubmit }) {
           <input
             type="number"
             value={taxPercent}
-            onChange={(e) => setTaxPercent(e.target.value)}
+            onChange={(e) => setTaxPercent(Number(e.target.value) || 0)}
             min={0}
           />
+          <label>Status</label>
+          <select value={status} onChange={(e) => setStatus(e.target.value)}>
+            <option value="Draft">Draft</option>
+            <option value="Sent">Sent</option>
+            <option value="Paid">Paid</option>
+            <option value="Overdue">Overdue</option>
+          </select>
         </div>
       </div>
 
       <h3>Line items</h3>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <table className="line-items-table">
         <thead>
           <tr>
-            <th style={{ textAlign: "left" }}>Description</th>
+            <th className="th-cell">Description</th>
             <th>Qty</th>
             <th>Price</th>
             <th>Amount</th>
@@ -145,10 +176,9 @@ export default function InvoiceForm({ onSubmit }) {
                   onChange={(e) =>
                     updateItem(it.id, "description", e.target.value)
                   }
-                  style={{ width: "100%" }}
                 />
               </td>
-              <td style={{ width: 80 }}>
+              <td className="col-qty">
                 <input
                   type="number"
                   min={0}
@@ -156,7 +186,7 @@ export default function InvoiceForm({ onSubmit }) {
                   onChange={(e) => updateItem(it.id, "qty", e.target.value)}
                 />
               </td>
-              <td style={{ width: 120 }}>
+              <td className="col-price">
                 <input
                   type="number"
                   min={0}
@@ -165,12 +195,12 @@ export default function InvoiceForm({ onSubmit }) {
                   onChange={(e) => updateItem(it.id, "price", e.target.value)}
                 />
               </td>
-              <td style={{ width: 120 }}>
+              <td className="col-price">
                 {formatCurrency(
                   (Number(it.qty) || 0) * (Number(it.price) || 0)
                 )}
               </td>
-              <td style={{ width: 80 }}>
+              <td className="col-action">
                 <button type="button" onClick={() => removeItem(it.id)}>
                   Remove
                 </button>
@@ -179,20 +209,18 @@ export default function InvoiceForm({ onSubmit }) {
           ))}
         </tbody>
       </table>
-
-      <div style={{ marginTop: 8 }}>
+      <div className="mt-sm">
         <button type="button" onClick={addItem}>
           Add item
         </button>
       </div>
-
-      <div style={{ marginTop: 16, textAlign: "right" }}>
+      <div className="totals-row">
         <div>Subtotal: {formatCurrency(subtotal)}</div>
         <div>Tax: {formatCurrency(taxAmount)}</div>
-        <div style={{ fontWeight: "bold" }}>Total: {formatCurrency(total)}</div>
+        <div className="total-amount">Total: {formatCurrency(total)}</div>
       </div>
 
-      <div style={{ marginTop: 18 }}>
+      <div className="mt-md">
         <button type="submit">Save invoice</button>
       </div>
     </form>

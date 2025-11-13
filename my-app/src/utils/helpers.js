@@ -6,7 +6,7 @@ export default function formatCurrency(value) {
       style: "currency",
       currency: "USD",
     }).format(n);
-  } catch (e) {
+  } catch {
     return "$" + n.toFixed(2);
   }
 }

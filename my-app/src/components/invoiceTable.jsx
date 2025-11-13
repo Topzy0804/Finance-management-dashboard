@@ -15,7 +15,7 @@ export default function InvoiceTable({
     if (!d) return "-";
     try {
       return new Date(d).toLocaleDateString();
-    } catch (e) {
+    } catch {
       return d;
     }
   };
@@ -30,45 +30,35 @@ export default function InvoiceTable({
       {invoices.length === 0 ? (
         <div>No invoices yet.</div>
       ) : (
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <table>
           <thead>
             <tr>
-              <th style={{ textAlign: "left", padding: 8 }}>Invoice #</th>
-              <th style={{ textAlign: "left", padding: 8 }}>Client</th>
-              <th style={{ padding: 8 }}>Date</th>
-              <th style={{ padding: 8 }}>Due</th>
-              <th style={{ padding: 8, textAlign: "right" }}>Amount</th>
-              <th style={{ padding: 8 }}>Status</th>
-              <th style={{ padding: 8 }}>Actions</th>
+              <th className="th-left">Invoice #</th>
+              <th className="th-left">Client</th>
+              <th>Date</th>
+              <th>Due</th>
+              <th className="text-right">Amount</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {invoices.map((inv) => (
-              <tr
-                key={inv.invoiceNumber ?? inv.id}
-                style={{ borderTop: "1px solid #eee" }}
-              >
-                <td style={{ padding: 8 }}>{inv.invoiceNumber ?? "-"}</td>
-                <td style={{ padding: 8 }}>{inv.clientName ?? "-"}</td>
-                <td style={{ padding: 8 }}>{fmtDate(inv.date)}</td>
-                <td style={{ padding: 8 }}>{fmtDate(inv.dueDate)}</td>
-                <td style={{ padding: 8, textAlign: "right" }}>
+              <tr key={inv.invoiceNumber ?? inv.id} className="row-border">
+                <td>{inv.invoiceNumber ?? "-"}</td>
+                <td>{inv.clientName ?? "-"}</td>
+                <td>{fmtDate(inv.date)}</td>
+                <td>{fmtDate(inv.dueDate)}</td>
+                <td className="text-right">
                   {formatCurrency(inv.total ?? inv.subtotal ?? 0)}
                 </td>
-                <td style={{ padding: 8 }}>
-                  <span
-                    className={statusClass(inv.status)}
-                    style={{
-                      padding: "4px 8px",
-                      borderRadius: 6,
-                      background: "#f0f0f0",
-                    }}
-                  >
+                <td>
+                  <span className={`${statusClass(inv.status)} invoice-badge`}>
                     {inv.status ?? "Unknown"}
                   </span>
                 </td>
-                <td style={{ padding: 8 }}>
-                  <div style={{ display: "flex", gap: 8 }}>
+                <td>
+                  <div className="invoice-actions">
                     <button onClick={() => onView && onView(inv)}>View</button>
                     <button onClick={() => onEdit && onEdit(inv)}>Edit</button>
                     <button onClick={() => onDelete && onDelete(inv)}>
