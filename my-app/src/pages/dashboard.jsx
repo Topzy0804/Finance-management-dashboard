@@ -1,5 +1,6 @@
 import React from "react";
 import formatCurrency from "../utils/helpers";
+import WorkingCapitalChart from "../components/WorkingCapitalChart"; // added
 
 export default function Dashboard() {
   const summary = [
@@ -9,6 +10,15 @@ export default function Dashboard() {
   ];
 
   const recent = [1, 2, 3]; // placeholder rows
+
+  // sample series data for the chart
+  const series = [
+    { label: "Jan", income: 1200, expenses: 800 },
+    { label: "Feb", income: 1500, expenses: 900 },
+    { label: "Mar", income: 1250, expenses: 700 },
+    { label: "Apr", income: 1700, expenses: 950 },
+    { label: "May", income: 1900, expenses: 1100 },
+  ];
 
   return (
     <div className="page-content">
@@ -47,7 +57,9 @@ export default function Dashboard() {
               <div className="small muted">Expenses</div>
             </div>
           </div>
-          <div className="chart-placeholder">Chart placeholder</div>
+
+          {/* replaced placeholder with chart component */}
+          <WorkingCapitalChart series={series} />
         </div>
       </section>
 

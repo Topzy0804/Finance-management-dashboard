@@ -1,13 +1,41 @@
-import React from "react";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import image from "../assets/image.png";
+import logo from "../assets/logo.png";
+// import { account, id } from "../appwrite";
+
 
 export default function Register() {
+  const [registerDetails, setRegisterDetails] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+  });
+
+  const handleUpdate = (e) => {
+    setRegisterDetails({ ...registerDetails, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const { fullName, email, password } = registerDetails;
+      await account.create(ID.unique(), email, password, fullName);
+      alert(`Account created successfully for ${fullName}`);
+      setRegisterDetails({ fullName: "", email: "", password: "" });
+    } catch (error) {
+      console.error("Error creating account:", error);
+      alert(error?.message || "Failed to create account");
+    }
+  };
+
   return (
     <div className="page-content auth-page">
       <div className="auth-left">
         <div className="auth-card">
           <div className="auth-brand">
             <div className="logo">
-              <img src="assets/logo(1).png" alt="brand logo" />
+              <img src={logo} alt="" />
             </div>
           </div>
 
@@ -16,20 +44,41 @@ export default function Register() {
               <h1>Create new account</h1>
               <p className="muted">Welcome back! Please enter your details</p>
             </div>
-            <form className="form-stack" action="#">
+            <form onSubmit={handleSubmit} className="form-stack" action="#">
               <div className="form-group">
-                <label htmlFor="name">Full Name</label>
-                <input type="text" id="name" name="name" required />
+                <label htmlFor="fullName">Full Name</label>
+                <input
+                  onChange={handleUpdate}
+                  type="text"
+                  id="fullName"
+                  name="fullName"
+                  value={registerDetails.fullName}
+                  required
+                />
               </div>
 
               <div className="form-group">
                 <label htmlFor="email">Email Address</label>
-                <input type="email" id="email" name="email" required />
+                <input
+                  onChange={handleUpdate}
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={registerDetails.email}
+                  required
+                />
               </div>
 
               <div className="form-group">
                 <label htmlFor="password">Password</label>
-                <input type="password" id="password" name="password" required />
+                <input
+                  onChange={handleUpdate}
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={registerDetails.password}
+                  required
+                />
               </div>
 
               <div className="form-checker">
@@ -47,7 +96,10 @@ export default function Register() {
               </button>
 
               <div className="form-remind small muted">
-                Already have an account? <a href="#">Sign in</a>
+                Already have an account?{" "}
+                <Link to="/login" className="nav-link">
+                  Login here.
+                </Link>
               </div>
             </form>
           </div>
@@ -56,7 +108,7 @@ export default function Register() {
 
       <div className="auth-right">
         <div className="hero-wrap">
-          <img src="assets/image.png" alt="hero" />
+          <img src={image} alt="hero" />
         </div>
       </div>
     </div>

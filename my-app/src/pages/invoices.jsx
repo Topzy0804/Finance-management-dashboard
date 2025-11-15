@@ -62,7 +62,9 @@ export default function Invoices() {
                 </td>
 
                 <td className="td-cell">
-                  <button className="ghost">View Details</button>
+                  <Link className="btn-create" to="/preview">
+            Veiw deatails
+          </Link>
                 </td>
               </tr>
             ))}

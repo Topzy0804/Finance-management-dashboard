@@ -229,10 +229,15 @@ input {
   display: flex;
   flex-direction: column;
 }
-.sidebar-top { margin-bottom:18px }
+.sidebar-top { 
+  margin-bottom:18px 
+}
+
 .sidebar-logo img { 
-  width:44px; 
-  height:44px; 
+  width: 100px;
+  display:block;
+  margin: 0 auto;
+  height: auto;
 }
 .sidebar-nav { display:flex; flex-direction:column; gap:8px }
 .nav-item { display:flex; align-items:center; gap:10px; padding:10px; border-radius:8px; color:#6b7280; text-decoration:none }
@@ -301,7 +306,18 @@ input {
 .auth-right { flex: 1 1 50%; background: #e9ecef; display:flex; align-items:center; justify-content:center }
 .auth-card { width: 460px; padding: 48px 40px; background: #ffffff; border-radius: 8px; box-shadow: 0 6px 30px rgba(16,24,40,0.08) }
 .auth-brand { margin-bottom: 12px }
-.auth-card .logo img { width: 56px; height: 56px; display:block }
+
+.auth-card .logo { 
+  width: 56px; 
+  height: 56px; 
+  display:block;
+  color: #faf9fc;
+  background: none;
+ }
+.login-header { text-align: center; 
+  margin-bottom: 24px 
+}
+
 .login-header h1 { margin: 6px 0 6px; font-size: 28px }
 .login-header .muted { margin: 0 0 18px; color: #6b7280 }
 .form-stack { display:flex; flex-direction:column; gap:12px }

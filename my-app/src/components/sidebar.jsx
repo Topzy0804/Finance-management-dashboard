@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 export default function Sidebar() {
   const items = [
@@ -14,7 +15,7 @@ export default function Sidebar() {
     <aside className="sidebar">
       <div className="sidebar-top">
         <div className="sidebar-logo">
-          <img src="assets/Logo(1).png" alt="" />
+          <img src={logo} alt="Logo" />
         </div>
       </div>
 

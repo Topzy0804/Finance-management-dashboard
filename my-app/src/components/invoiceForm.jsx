@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import formatCurrency from "../utils/helpers";
 // import { createRows } from "./../utils/db";
@@ -21,7 +20,20 @@ export default function InvoiceForm() {
 
   const updateItem = (id, field, value) => {
     setItems((prev) =>
-      prev.map((it) => (it.id === id ? { ...it, [field]: value } : it))
+      prev.map((it) =>
+        it.id === id
+          ? {
+              ...it,
+              // coerce qty/price to numbers (keep empty string if user clears input)
+              [field]:
+                field === "qty" || field === "price"
+                  ? value === ""
+                    ? ""
+                    : Number(value)
+                  : value,
+            }
+          : it
+      )
     );
   };
 
@@ -49,7 +61,7 @@ export default function InvoiceForm() {
   };
 
   const handleSubmit = async (e) => {
-    e && e.preventDefault();
+    e?.preventDefault();
 
     const err = validate();
     if (err) {
@@ -57,48 +69,33 @@ export default function InvoiceForm() {
       return;
     }
 
-    const invoiceDetails = {
-      invoiceNumber: invoiceNumber.trim() || undefined,
-      clientName: clientName.trim(),
-      date,
-      dueDate: dueDate || undefined,
-      items: items.map((it) => ({
-        description: it.description.trim(),
-        qty: Number(it.qty) || 0,
-        price: Number(it.price) || 0,
-        amount: (Number(it.qty) || 0) * (Number(it.price) || 0),
-      })),
-      taxPercent: Number(taxPercent) || 0,
-      subtotal,
-      taxAmount,
-      total,
-      notes: notes.trim() || undefined,
-      status: status || undefined,
-    };
-
     try {
-      // Check env var name in your .env; adjust if it's VITE_INVOICES_TABLE instead
-      const tableId =
-        import.meta.env.VITE_INVOICES_TABLE_ID ||
-        import.meta.env.VITE_INVOICES_TABLE;
-      const newInvoiceData = await createRows(tableId, invoiceDetails);
-      console.log("New invoice created:", newInvoiceData);
-      const invoiceId = newInvoiceData.$id;
+      const invoiceDetails = {
+        invoiceNumber: invoiceNumber.trim() || undefined,
+        clientName: clientName.trim(),
+        date,
+        dueDate: dueDate || undefined,
+        items: items.map((it) => ({
+          description: (it.description || "").trim(),
+          qty: Number(it.qty) || 0,
+          price: Number(it.price) || 0,
+          amount: (Number(it.qty) || 0) * (Number(it.price) || 0),
+        })),
+        taxPercent: Number(taxPercent) || 0,
+        subtotal,
+        taxAmount,
+        total,
+        notes: notes.trim() || undefined,
+        status: status || undefined,
+      };
 
-      // reset form (optional)
-      setInvoiceNumber("");
-      setClientName("");
-      setDate("");
-      setDueDate("");
-      setItems([emptyItem()]);
-      setTaxPercent(0);
-      setNotes("");
-      setStatus("Sent");
-
-      alert(`Invoice saved (id: ${invoiceId})`);
-    } catch (error) {
-      console.error("Failed to save invoice", error);
-      alert("Failed to save invoice. See console for details.");
+      await createRows(import.meta.env.VITE_INVOICE_TABLE_ID, invoiceDetails);
+      // reset form or show success
+      alert("Invoice saved");
+    } catch (saveErr) {
+      console.error(saveErr);
+      alert("Failed to save invoice");
+    } finally {
     }
   };
 
@@ -221,7 +218,9 @@ export default function InvoiceForm() {
       </div>
 
       <div className="mt-md">
-        <button type="submit">Save invoice</button>
+        <button type="submit" >
+        create Invoice
+        </button>
       </div>
     </form>
   );
